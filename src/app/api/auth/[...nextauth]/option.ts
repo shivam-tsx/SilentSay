@@ -14,16 +14,18 @@ interface DBUser {
 }
 
 export const authOptions: NextAuthOptions = {
+    //providers ke andr provider strategy deni hoti hai ,github(isme bs secret dalne hote hai) ka ya credential provider
     providers: [
         CredentialsProvider({
             id: "credentials",
             name: "Credentials",
             credentials: {
-                emailOrUsername: { label: "Email or Username", type: "text" },
+                email: { label: "Email", type: "email" },
                 password: { label: "Password", type: "password" },
             },
+            //authorize krne ki strategy hai which is made by us not required for other providers
             async authorize(credentials) {
-                if (!credentials?.emailOrUsername || !credentials?.password) {
+                if (!credentials?.email || !credentials?.password) {
                     throw new Error("Missing credentials");
                 }
 
@@ -31,8 +33,8 @@ export const authOptions: NextAuthOptions = {
 
                 const user = await UserModel.findOne<DBUser>({
                     $or: [
-                        { email: credentials.emailOrUsername },
-                        { username: credentials.emailOrUsername },
+                        { email: credentials.email },
+                        { username: credentials.email },
                     ],
                 });
 
@@ -59,7 +61,9 @@ export const authOptions: NextAuthOptions = {
             },
         }),
     ],
+    //callbacks ko modify kra kyoki bar bar database me query na lagani pde 
     callbacks: {
+        //user se info token me shift krdi
         async jwt({ token, user }) {
             if (user) {
                 token._id = user._id;
@@ -69,6 +73,7 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
+        //token se session me shift krdia
         async session({ session, token }) {
             if (session.user && token) {
                 session.user._id = token._id as string;
@@ -78,12 +83,14 @@ export const authOptions: NextAuthOptions = {
             }
             return session;
         },
+        //ab chaye token ka access mile ya session ka mil jaye usme se direct values nikal lenge
     },
+    // nextauth ke jo pages hote hai auth/signin is trh hai, we have customize it
     pages: {
         signIn: "/sign-in",
     },
     session: {
-        strategy: "jwt",
+        strategy: "jwt", //databse ki bhi hoti hai
     },
     secret: process.env.NEXTAUTH_SECRET,
 };
