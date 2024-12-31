@@ -73,7 +73,7 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        //token se session me shift krdia
+        //token se session me shift krdia, session se user me ja rha hai
         async session({ session, token }) {
             if (session.user && token) {
                 session.user._id = token._id as string;
