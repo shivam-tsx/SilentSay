@@ -53,7 +53,8 @@ export const authOptions: NextAuthOptions = {
                 if (!isPasswordCorrect) {
                     throw new Error("Incorrect password");
                 }
-
+                
+                //yha pr jo return values hoti hai vo direct callbacks me available hoti hai
                 return {
                     ...user,
                     id: user._id,
@@ -63,7 +64,7 @@ export const authOptions: NextAuthOptions = {
     ],
     //callbacks ko modify kra kyoki bar bar database me query na lagani pde 
     callbacks: {
-        //user se info token me shift krdi
+        //user ki info session se aayi,use jwt token me dal dia 
         async jwt({ token, user }) {
             if (user) {
                 token._id = user._id;
@@ -73,7 +74,7 @@ export const authOptions: NextAuthOptions = {
             }
             return token;
         },
-        //token se session me shift krdia, session se user me ja rha hai
+        //hamne ek user bnaya session k ander aur usme session k token se value dal di user me,yhi user available hoga jwt function me
         async session({ session, token }) {
             if (session.user && token) {
                 session.user._id = token._id as string;
